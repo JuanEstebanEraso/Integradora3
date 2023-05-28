@@ -107,11 +107,12 @@ public abstract class User {
     	int times = purchasedProducts.size() - 25;
     	int ite = 0;
     	
-    	while (times > 0) {
+    	do {
 			array.add(this.LoadLibrary(ite));
 			ite += 25;
 			times -= 25;
 		}
+	    while (times > 0);
     }
     
     public String showLibrary(int iterator) {
