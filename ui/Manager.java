@@ -68,7 +68,8 @@ public class Manager {
             System.out.println("10. generate test cases");
             System.out.println("11. sale ");
             System.out.println("12. Show inform number of pages readed for each genre ");
-            System.out.println("13. Exit");
+            System.out.println("13. Show report of gender most readed");
+            System.out.println("14. Exit");
             System.out.println("Enter the option you want:");
 
             option = sn.nextInt();
@@ -110,8 +111,10 @@ public class Manager {
                 case 12:
                 informAcumPages();;
                 break;
-
                 case 13:
+                    reportMostGenderRead();
+                    break;
+                case 14:
                     salir = true;
                     break;
                 default:
@@ -119,6 +122,12 @@ public class Manager {
             }
             System.out.println();
         }
+    }
+
+    private void reportMostGenderRead() {
+
+        readX.reportMostGenderRead();
+
     }
 
     public void userMenu() {
@@ -328,13 +337,12 @@ public void showLibrary() {
     Scanner sn = new Scanner(System.in);
     System.out.println("Enter your name:");
     String name = sn.nextLine();
-    int page = 0;
 
     boolean ifUserExist = readX.validateUserByName(name);
     if (ifUserExist) {
     	
     	do {
-    		System.out.println(this.readX.showUserLibrary(name, page));
+    		System.out.println(this.readX.showUserLibrary(name));
     		System.out.println("Type C to access the reading session of a product\n"
     				+ "Enter A to go to the previous page\n"
     				+ "Type S to go to the next page\n"
@@ -390,14 +398,11 @@ public void showLibrary() {
 				break;
 				
 			case 'A':
-				page--;
-				System.out.println(this.readX.showUserLibrary(name, page));
-				
+                this.readX.matrixPreviousPage(name);
 				break;
 				
 			case 'S':
-				page++;
-				System.out.println(this.readX.showUserLibrary(name, page));
+                this.readX.matrixNextPage(name);
 				break;
 			
 			case 'E':
@@ -419,11 +424,3 @@ public void showLibrary() {
 
 
 }
-
-
-
-
-
-
-
-
