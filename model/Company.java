@@ -1,5 +1,6 @@
 package model;
 
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -10,6 +11,10 @@ public class Company{
 	
     ArrayList <User> ussers= new ArrayList<>();
     ArrayList <Bibliographicproduct> bibliographicproducts= new ArrayList<>();
+
+    ArrayList<Book> puschasedBooks = new ArrayList<>();
+    ArrayList<Magazine> purchasesMagazines = new ArrayList<>();
+
     private static final int ROWS = 5;
     private static final int COLUMNS = 5;
     private String nameCompany;
@@ -51,9 +56,14 @@ public class Company{
     }
     public void saleAutomatic(){
         for (int i = 0; i < 30; i++) {
-        ussers.get(0).addPurchasedProduct(bibliographicproducts.get(7));
-        ussers.get(1).addPurchasedProduct(bibliographicproducts.get(7));
+        ussers.get(1).addPurchasedProduct(bibliographicproducts.get(1));
+        // ussers.get(1).addPurchasedProduct(bibliographicproducts.get(2));
+        // ussers.get(1).addPurchasedProduct(bibliographicproducts.get(3));
+        // ussers.get(1).addPurchasedProduct(bibliographicproducts.get(4));
+        // ussers.get(1).addPurchasedProduct(bibliographicproducts.get(5));
+        // ussers.get(1).addPurchasedProduct(bibliographicproducts.get(1));
     }
+
 }
 
 
@@ -149,7 +159,12 @@ public String showBibliographicsMagazine() {
 	public String buyBibliographic(User user, Bibliographicproduct bibliographicproduct) {
 	    if (ussers.contains(user) && bibliographicproducts.contains(bibliographicproduct)) {
 	        user.addPurchasedProduct(bibliographicproduct);
-	        return "Producto comprado exitosamente.";
+
+            Sale sale=new Sale(bibliographicproduct, user);
+
+
+            
+	        return sale.generarFactura();
 	    } else {
 	        return "Usuario o producto no encontrado.";
 	    }
@@ -159,6 +174,8 @@ public String showBibliographicsMagazine() {
     	
     	Bibliographicproduct product = this.getBibliographicProductByName(nameProduct);
     	User user = this.getUserByName(nameUser);
+
+        
     	
     	return this.buyBibliographic(user, product);
     }
@@ -255,9 +272,10 @@ public boolean validateUserByName(String name) {
     }
     return false; 
 }
-public String showUserLibrary(String name, int i) {
+public String showUserLibrary(String name) {
     User user = this.getUserByName(name);
-   return user.showLibrary(i);
+    
+   return user.showLibrary();
 }
 public Bibliographicproduct getLibraryProduct(String name, int fila, int columna) {
     User user = this.getUserByName(name);
@@ -338,57 +356,30 @@ public String informSuscriptionsByGenreMagazine() {
     return result;
 }
 public String informAcumPages() {
-    int magazinesAcumVarieties = 0;
-    int magazinesAcumDesign = 0;
-    int magazinesAcumScientific = 0;
-    int booksAcumCSI = 0;
-    int booksAcumFantasy = 0;
-    int booksAcumHistoric = 0;
- 
+    int totalMagazinePages = 0;
+    int totalBookPages = 0;
+
     for (User user : ussers) {
-        ArrayList<Bibliographicproduct> purchasedProducts = user.getPurchasedProducts();
-        
-        for (Bibliographicproduct product : purchasedProducts) {
+        ArrayList<ReadingSession> readingSessions = user.getReadingSessions();
+
+        for (ReadingSession reading : readingSessions) {
+            getBibliographicProductByName(reading.getBookName());
+            Bibliographicproduct product = getBibliographicProductByName(reading.getBookName());
+
             if (product instanceof Magazine) {
-                Magazine magazine = (Magazine) product;
-                GenreType2 genre = magazine.getGenreMagazine();
-                
-                if (genre == GenreType2.Varieties) {
-                    magazinesAcumVarieties = magazine.getAcumPagesRead();
-                } else if (genre == GenreType2.Design) {
-                    magazinesAcumDesign = magazine.getAcumPagesRead();
-                } else if (genre == GenreType2.Scientific) {
-                    magazinesAcumScientific = magazine.getAcumPagesRead();
-                }
+                totalMagazinePages += reading.getCurrentPage();
             } else if (product instanceof Book) {
-                Book book = (Book) product;
-                GenreType genre = book.getGenre();
-                
-                if (genre == GenreType.Csi) {
-                    booksAcumCSI = book.getAcumPagesRead();
-                } else if (genre == GenreType.Fantasy) {
-                    booksAcumFantasy += book.getAcumPagesRead();
-                } else if (genre == GenreType.Historic) {
-                    booksAcumHistoric += book.getAcumPagesRead();
-                }
+                totalBookPages += reading.getCurrentPage();
             }
         }
     }
-    
-    
-    String result = "Accumulated pages read by magazine genre:\n";
-    result += "Varieties: " + magazinesAcumVarieties + " pages\n";
-    result += "Design: " + magazinesAcumDesign + " pages\n";
-    result += "Scientific: " + magazinesAcumScientific + " pages\n";
-    
-    result += "\n Accumulated pages read by book genre:\n";
-    result += "CSI: " + booksAcumCSI + " pages\n";
-    result += "Fantasy: " + booksAcumFantasy + " pages\n";
-    result += "Historic: " + booksAcumHistoric + " pages\n";
-    
+
+    String result = "Accumulated pages read:\n";
+    result += "Total magazine pages: " + totalMagazinePages + " pages\n";
+    result += "Total book pages: " + totalBookPages + " pages\n";
+
     return result;
 }
-
 public String readingSession(String name, int fila, int columna) {
 	
 	User user = getUserByName(name);
@@ -411,68 +402,24 @@ public void previusPageReadingSession(String name,  int fila, int columna) {
 	
 	user.getReadingSessionByName(libraryProduct.getName()).previousPage();
 }
-// public void informMostReadBooksAndMagazines() {
-//     // ArrayList para almacenar los libros más leídos
-//     ArrayList<Book> mostReadBooks = new ArrayList<>();
+public void matrixNextPage(String name) {
+    User user = this.getUserByName(name);
+    user.nextMatrixPage();
+}
+public void matrixPreviousPage(String name) {
 
-    
-//     // ArrayList para almacenar las revistas más leídas
-//     ArrayList<Magazine> mostReadMagazines = new ArrayList<>();
-    
-//     // Recorre todos los usuarios en la plataforma
-//     for (User user : ussers) {
-//         // Recorre todos los productos bibliográficos adquiridos por el usuario
-//         for (Bibliographicproduct product : user.getPurchasedProducts()) {
-//             if (product instanceof Book) {
-//                 Book book = (Book) product;
-                
-//                 // Verifica y actualiza el ArrayList de libros más leídos
-//                 if (mostReadBooks.size() < 5) {
-//                     mostReadBooks.add(book);
-//                     mostReadBooks.sort(Comparator.comparingInt(Book::numPagesReadBook).reversed());
-//                 } else {
-//                     for (int i = 0; i < mostReadBooks.size(); i++) {
-//                         if (book.getAcumPagesRead() > mostReadBooks.get(i).getAcumPagesRead()) {
-//                             mostReadBooks.add(i, book);
-//                             mostReadBooks.remove(5);
-//                             break;
-//                         }
-//                     }
-//                 }
-//             } else if (product instanceof Magazine) {
-//                 Magazine magazine = (Magazine) product;
-                
-//                 // Verifica y actualiza el ArrayList de revistas más leídas
-//                 if (mostReadMagazines.size() < 5) {
-//                     mostReadMagazines.add(magazine);
-//                     mostReadMagazines.sort(Comparator.comparingInt(Magazine::getPagesRead).reversed());
-//                 } else {
-//                     for (int i = 0; i < mostReadMagazines.size(); i++) {
-//                         if (magazine.getPagesRead() > mostReadMagazines.get(i).getPagesRead()) {
-//                             mostReadMagazines.add(i, magazine);
-//                             mostReadMagazines.remove(5);
-//                             break;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-    
-//     // Muestra los resultados para los libros más leídos
-//     System.out.println("Top 5 de libros más leídos:");
-//     for (int i = 0; i < mostReadBooks.size(); i++) {
-//         Book book = mostReadBooks.get(i);
-//         System.out.println((i + 1) + ". " + book.getName() + " - " + book.getGenre() + " (" + book.getPagesRead() + " páginas)");
-//     }
-    
-//     // Muestra los resultados para las revistas más leídas
-//     System.out.println("\nTop 5 de revistas más leídas:");
-//     for (int i = 0; i < mostReadMagazines.size(); i++) {
-//         Magazine magazine = mostReadMagazines.get(i);
-//         System.out.println((i + 1) + ". " + magazine.getName() + " - " + magazine.getCategoryMagazine() + " (" + magazine.getPagesRead() + " páginas)");
-//     }
-// }
+    User user = this.getUserByName(name);
+    user.previousMatrixPage();
+
+}
+    public void reportMostGenderRead() {
+
+        ArrayList<Bibliographicproduct> bookList = new ArrayList<>();
+        ArrayList<Bibliographicproduct> magazineList = new ArrayList<>();
+
+        ussers.forEach(null);
+
+    }
 }
 
 
