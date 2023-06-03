@@ -1,6 +1,5 @@
 package model;
 
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +16,7 @@ public abstract class User {
     private static final int COLUMNS= 5;
     private Bibliographicproduct[][] library;
     private ArrayList<Bibliographicproduct[][]>array= new ArrayList<>();
+    private int actualMatrix = 0;
 
     public User(String name, String id, LocalDate vinculationDate) {
         this.name = name;
@@ -88,6 +88,7 @@ public abstract class User {
     
     public Bibliographicproduct[][] LoadLibrary(int iterator) {
       Collections.sort(purchasedProducts, Comparator.comparing(Bibliographicproduct::getPublicationDate).reversed());
+    //   System.out.println("iterator: "+iterator);
       int condition = iterator;
       library=new Bibliographicproduct[ROWS][COLUMNS]; 
       for (int i = 0; i < User.ROWS; i++) {
@@ -103,46 +104,89 @@ public abstract class User {
      return  library;
   }
     
-    private void loadArrayLibrary() {
-    	int times = purchasedProducts.size() - 25;
-    	int ite = 0;
+    public void loadArrayLibrary() {
     	
-    	do {
+        int times = purchasedProducts.size();
+        array.clear();
+        //System.out.println("times: "+times);
+    	int ite = 0;
+        int count=0;
+    	while(times > 0){
+            
+            // System.out.println("ite:"+ite);
 			array.add(this.LoadLibrary(ite));
 			ite += 25;
 			times -= 25;
+            
+           // count++;
+
 		}
-	    while (times > 0);
+      //  System.out.println("count: "+count);
     }
     
-    public String showLibrary(int iterator) {
-    	this.loadArrayLibrary();
-      Bibliographicproduct[][] ar = this.array.get(iterator);
-      
-      if (iterator >= 0 && iterator < array.size()) {
-    	  StringBuilder ret = new StringBuilder("     0   |   1   |   2   |   3   |   4\n");
+    public String showLibrary() {
+        
+        int iterator = this.actualMatrix;
+        this.loadArrayLibrary();
+        Bibliographicproduct[][] ar = this.array.get(iterator);
+          
+        StringBuilder ret = new StringBuilder("     0   |   1   |   2   |   3   |   4\n");
     	  
-          for (int i = 0; i < User.ROWS; i++) {
-              ret.append(i + " | ");
-              for (int j = 0; j < User.COLUMNS; j++) {
-                  Bibliographicproduct product = ar[i][j];
-                  if (product != null) {
-                      ret.append(product.getId() + "  | ");
-                  } else {
-                      ret.append("      | ");
-                  }
-              }
-              ret.append("\n");
-          }
-          ret.append("\n");
-          return ret.toString();
-      }
-      return "error";
-      
+        for (int i = 0; i < User.ROWS; i++) {
+            ret.append(i + " | ");
+            for (int j = 0; j < User.COLUMNS; j++) {
+                Bibliographicproduct product = ar[i][j];
+                if (product != null) {
+                    ret.append(product.getId() + "  | ");
+                } else {
+                    ret.append("      | ");
+                }
+            }
+            ret.append("\n");
+        }
+        ret.append("\n");
+    //   System.out.println(counter);
+        return ret.toString();
 	}
+
+    public void nextMatrixPage() {
+
+        if (this.actualMatrix < array.size() - 1) {
+            this.actualMatrix++;
+        }
+        System.out.println(this.actualMatrix);
+    }
+
+    public void previousMatrixPage() {
+
+        if (this.actualMatrix > 0) {
+            this.actualMatrix--;
+        }
+    }
+
+    public ArrayList<Bibliographicproduct> getBooks() {
+
+        ArrayList<Bibliographicproduct> books = new ArrayList<>();
+        purchasedProducts.forEach(product -> {
+            if ( product instanceof Book) {
+                books.add(product);
+            }
+        });
+        return books;
+    }
+
+    public ArrayList<Bibliographicproduct> getMagazine() {
+        
+        ArrayList<Bibliographicproduct> magazine = new ArrayList<>();
+        purchasedProducts.forEach(product -> {
+            if ( product instanceof Magazine) {
+                magazine.add(product);
+            }
+        });
+        return magazine;
+    }
       
       
-    
     public Bibliographicproduct getLibraryProduct(int x, int y) {
  		return library[x][y];
  	}
@@ -152,6 +196,3 @@ public abstract class User {
         return "Name: " + name + " id: " + id + " vinculation date: " + vinculationDate;
     }
 }
-
-
-
